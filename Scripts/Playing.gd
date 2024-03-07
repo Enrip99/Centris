@@ -206,6 +206,7 @@ func copy_quad():
 	for y in quadSide:
 		for x in quadSide:
 			tilemapNode.set_cell(x-10, y-10, quad[y][x]);
+	
 	# Drwa falling piece
 	for y in 4:
 		for x in 4:
