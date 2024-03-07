@@ -215,7 +215,7 @@ func copy_quad():
 func newPiece():
 	currentPiece = nextPiece;
 	if pieceQueue.empty():
-		pieceQueue = [1,2,3,4,5,6,7];
+		pieceQueue = [0,1,2,3,4,5,6];
 		pieceQueue.shuffle();
 	nextPiece = pieceQueue.pop_back();
 	currentPieceRotation = 0;
@@ -247,7 +247,7 @@ func _ready():
 		for x in quadSide:
 			quad[y].append(tilemapNode.get_cell(x-10, y-10));
 	
-	pieceQueue = [1,2,3,4,5,6,7];
+	pieceQueue = [0,1,2,3,4,5,6];
 	pieceQueue.shuffle();
 	nextPiece = pieceQueue.pop_back();
 	newPiece();
