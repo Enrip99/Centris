@@ -1,205 +1,36 @@
 extends Node2D
-onready var tilemapNode = $Tiles
-var totaldelta = 0
-var quad = []
-var quadSide = 24
-var gravityPhase
-var currentPiece
-var currentPieceRotation
-var currentPiecePosition
-var nextPiece
-var pieceQueue = []
-var holdPiece
-var holdPieceRotation
-var canHold
 
-const pieces = [
-	[ # J piece
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 1,  1,  1, -1],
-			[-1, -1,  1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  1, -1, -1],
-			[-1,  1, -1, -1],
-			[ 1,  1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[ 1, -1, -1, -1],
-			[ 1,  1,  1, -1],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  1,  1, -1],
-			[-1,  1, -1, -1],
-			[-1,  1, -1, -1]
-		]
-	],
-	[ # L piece
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 2,  2,  2, -1],
-			[ 2, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[ 2,  2, -1, -1],
-			[-1,  2, -1, -1],
-			[-1,  2, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1, -1,  2, -1],
-			[ 2,  2,  2, -1],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  2, -1, -1],
-			[-1,  2, -1, -1],
-			[-1,  2,  2, -1]
-		]
-	],
-	[ # O piece
-		[
-			[-1, -1, -1, -1],
-			[-1,  3,  3, -1],
-			[-1,  3,  3, -1],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  3,  3, -1],
-			[-1,  3,  3, -1],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  3,  3, -1],
-			[-1,  3,  3, -1],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  3,  3, -1],
-			[-1,  3,  3, -1],
-			[-1, -1, -1, -1]
-		]
-	],
-	[ # S piece
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[-1,  4,  4, -1],
-			[ 4,  4, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  4, -1, -1],
-			[-1,  4,  4, -1],
-			[-1, -1,  4, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[-1,  4,  4, -1],
-			[ 4,  4, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  4, -1, -1],
-			[-1,  4,  4, -1],
-			[-1, -1,  4, -1]
-		]
-	],
-	[ # Z piece
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 5,  5, -1, -1],
-			[-1,  5,  5, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1, -1,  5, -1],
-			[-1,  5,  5, -1],
-			[-1,  5, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 5,  5, -1, -1],
-			[-1,  5,  5, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1, -1,  5, -1],
-			[-1,  5,  5, -1],
-			[-1,  5, -1, -1]
-		]
-	],
-	[ # T piece
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 6,  6,  6, -1],
-			[-1,  6, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  6, -1, -1],
-			[ 6,  6, -1, -1],
-			[-1,  6, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  6, -1, -1],
-			[ 6,  6,  6, -1],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1,  6, -1, -1],
-			[-1,  6,  6, -1],
-			[-1,  6, -1, -1]
-		]
-	],
-	[ # I piece
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 7,  7,  7,  7],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1,  7, -1],
-			[-1, -1,  7, -1],
-			[-1, -1,  7, -1],
-			[-1, -1,  7, -1]
-		],
-		[
-			[-1, -1, -1, -1],
-			[-1, -1, -1, -1],
-			[ 7,  7,  7,  7],
-			[-1, -1, -1, -1]
-		],
-		[
-			[-1, -1,  7, -1],
-			[-1, -1,  7, -1],
-			[-1, -1,  7, -1],
-			[-1, -1,  7, -1]
-		]
-	]
-]
+onready var tilemapNode = $Tiles
+var quad = []
+const quadSide = 24
+
+var totaldelta = 0
+
+var gravityPhase: int
+const gravityArray = [Vector2(0,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,0)]
+
+var currentPiece: int
+var currentPieceRotation: int
+var currentPiecePosition: Vector2
+
+var currentPieceFallTimer: float
+var currentFallTimerThreshold: float
+var fallTimerThresholdByLevel = []
+var currentLevel: int
+
+var nextPiece: int
+var pieceQueue = []
+
+var holdPiece: int
+var holdPieceRotation: int
+var canHold: bool
+
+const PIECES = preload("res://Scripts/Pieces.gd").PIECES
 
 func setDebugVars():
 	currentPiecePosition = Vector2(10,0)
+	currentFallTimerThreshold = 1
+	#gravityPhase = 3
 
 func copy_quad():
 	# Draw static piece pile
@@ -210,7 +41,7 @@ func copy_quad():
 	# Drwa falling piece
 	for y in 4:
 		for x in 4:
-			tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, pieces[currentPiece][currentPieceRotation][y][x]);
+			tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, PIECES[currentPiece][currentPieceRotation][y][x]);
 
 func newPiece():
 	currentPiece = nextPiece;
@@ -221,7 +52,6 @@ func newPiece():
 	currentPieceRotation = 0;
 
 func holdAction():
-	# TO DO: SET CAN HOLD TO TRUE UPON PLACING PIECE
 	if canHold:
 		canHold = false;
 		if holdPiece == -1:
@@ -235,10 +65,23 @@ func holdAction():
 			currentPieceRotation = holdPieceRotation;
 			holdPiece = tempPiece;
 			holdPieceRotation = tempRotation;
-		spawnPiece()
+		spawnPiece();
 
-func spawnPiece():
-	pass
+func spawnPiece(): # TO DO!
+	currentPieceFallTimer = 0;
+
+func checkMovementCollission(direction: int) -> bool: #TO DO!
+	
+	return false
+
+func pieceFall(): # TO DO!
+	currentPieceFallTimer = 0;
+	currentPiecePosition += gravityArray[gravityPhase];
+
+func pieceLand(): # TO DO!
+	canHold = true
+	gravityPhase = (gravityPhase+1)%4;
+	spawnPiece();
 
 func _ready():
 	randomize()
@@ -254,13 +97,21 @@ func _ready():
 	gravityPhase = 0;
 	holdPiece = -1;
 	
+	#Implementar xD
+	# currentPieceFallTimer = fallTimerThresholdByLevel[currentLevel];
+	
 	setDebugVars();
 
 
 
 func _process(delta):
 	totaldelta += delta;
-	#copy_quad()
-	currentPiece = 0
-	currentPieceRotation = 0
+	currentPieceFallTimer += delta;
+	if currentPieceFallTimer > currentFallTimerThreshold:
+		pieceFall();
+	
+	
+	copy_quad()
+	currentPiece = 2
+	currentPieceRotation = 3
 	print(1/delta)
