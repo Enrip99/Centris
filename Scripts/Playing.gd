@@ -5,7 +5,7 @@ var quad = []
 const quadSide = 30
 const halfSide = quadSide/2
 
-export (int) var player_ID = 1
+export (int) var player_ID = 0
 var totaldelta = 0
 
 var gravityPhase: int
@@ -137,6 +137,8 @@ func _ready():
 	for y in quadSide:
 		quad.append([])
 		for x in quadSide:
+# warning-ignore:integer_division
+# warning-ignore:integer_division
 			quad[y].append(tilemapNode.get_cell(x-(quadSide/2), y-(quadSide/2)));
 	pieceQueue = [0,1,2,3,4,5,6];
 	pieceQueue.shuffle();
@@ -157,9 +159,8 @@ func _process(delta):
 	totaldelta += delta;
 	currentPieceFallTimer += delta;
 	if currentPieceFallTimer > currentFallTimerThreshold:
+# warning-ignore:return_value_discarded
 		pieceFall();
 	
-	#currentPiece = 2
-	#currentPieceRotation = 3
 	# print(1/delta)
 	# FRAMERATE
