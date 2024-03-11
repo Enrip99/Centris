@@ -2,9 +2,10 @@ extends Node2D
 
 onready var tilemapNode = $Tiles
 var quad = []
-const quadSide = 24
+const quadSide = 30
 const halfSide = quadSide/2
 
+export (int) var player_ID = 1
 var totaldelta = 0
 
 var gravityPhase: int
@@ -29,21 +30,23 @@ var canHold: bool
 const PIECES = preload("res://Scripts/Pieces.gd").PIECES
 
 func setDebugVars():
-	currentPiecePosition = Vector2(0,-11)
-	currentFallTimerThreshold = 1
+	#currentPiecePosition = Vector2(0,-halfSide)
+	currentFallTimerThreshold = .15
 	#gravityPhase = 3
 
-func copy_quad():
+
+func copy_quad(): # DO NOT USE
 	# Draw static piece pile
 	for y in quadSide:
 		for x in quadSide:
-			tilemapNode.set_cell(x-10, y-10, quad[y][x]);
+			tilemapNode.set_cell(x-halfSide, y-halfSide, quad[y][x]);
 	
-	# Drwa falling piece
+	# Draw falling piece
 	for y in 4:
 		for x in 4:
 			if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
 				tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, PIECES[currentPiece][currentPieceRotation][y][x]);
+
 
 func newPiece():
 	currentPiece = nextPiece;
@@ -70,8 +73,12 @@ func holdAction():
 		spawnPiece();
 
 func spawnPiece(): # TO DO!
-	currentPiecePosition = -8 * gravityArray[gravityPhase];
+	currentPiecePosition = -(halfSide-4) * gravityArray[gravityPhase];
 	currentPieceFallTimer = 0;
+	for y in 4:
+		for x in 4:
+			if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
+				tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, PIECES[currentPiece][currentPieceRotation][y][x]);
 
 func checkMovementCollission(direction: int) -> bool: #Returns true if collission
 	var xDir = gravityArray[direction].x + halfSide
@@ -82,13 +89,26 @@ func checkMovementCollission(direction: int) -> bool: #Returns true if collissio
 				return true;
 	return false
 
+func movePiece(direction: int):
+	for y in 4:
+		for x in 4:
+			if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
+				tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, -1);
+	currentPiecePosition += gravityArray[direction];
+	for y in 4:
+		for x in 4:
+			if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
+				tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, PIECES[currentPiece][currentPieceRotation][y][x]);
+	pass
+
 func pieceFall() -> bool: #returns true if it lands
 	currentPieceFallTimer = 0;
 	if checkMovementCollission(gravityPhase):
 		pieceLand();
 		return true;
 	else:
-		currentPiecePosition += gravityArray[gravityPhase];
+		movePiece(gravityPhase);
+		#currentPiecePosition += gravityArray[gravityPhase];
 		return false;
 
 func pieceLand(): #TO DO T-SPIN
@@ -97,10 +117,12 @@ func pieceLand(): #TO DO T-SPIN
 	
 	for y in 4:
 		for x in 4:
-			quad[currentPiecePosition.y+y][currentPiecePosition.x+x] = PIECES[currentPiece][currentPieceRotation][y][x];
+			if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
+				quad[currentPiecePosition.y+y+halfSide][currentPiecePosition.x+x+halfSide] = PIECES[currentPiece][currentPieceRotation][y][x];
 	canHold = true
 	gravityPhase = (gravityPhase+1)%4;
 	checkClearedLines();
+	newPiece();
 	spawnPiece();
 
 func checkClearedLines(): # TO DO!
@@ -126,6 +148,8 @@ func _ready():
 	# currentPieceFallTimer = fallTimerThresholdByLevel[currentLevel];
 	
 	setDebugVars();
+	
+	print("playerID = %d!!!" % player_ID)
 
 
 
@@ -135,8 +159,7 @@ func _process(delta):
 	if currentPieceFallTimer > currentFallTimerThreshold:
 		pieceFall();
 	
-	
-	copy_quad()
-	currentPiece = 2
-	currentPieceRotation = 3
-	#print(1/delta)
+	#currentPiece = 2
+	#currentPieceRotation = 3
+	# print(1/delta)
+	# FRAMERATE
