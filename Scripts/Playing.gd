@@ -6,8 +6,10 @@ const quadSide = 30
 const halfSide = quadSide/2
 
 export (int) var player_ID = 0
-var totaldelta = 0
+var totaldelta: float
 var heldTimer: float
+var heldTimerThreshold = 0.5
+var heldTimerRepeatThreshold = 0.2
 var heldDirection: int
 
 var gravityPhase: int
@@ -63,7 +65,8 @@ func holdAction():
 	if canHold:
 		for y in 4:
 			for x in 4:
-				tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, -1);
+				if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
+					tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y, -1);
 		canHold = false;
 		if holdPiece == -1:
 			holdPiece = currentPiece;
@@ -162,9 +165,10 @@ func rotatePiece(rotation: int): # TO DO: Try to move piece if it fails
 					tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y,\
 					PIECES[currentPiece][currentPieceRotation][y][x]);
 
-func processMoveInput(): # TO DO
+func processMoveInput():
 	match (heldDirection - gravityPhase)%4:
 		0:
+# warning-ignore:return_value_discarded
 			pieceFall();
 		2, -2:
 			hardDrop();
@@ -225,13 +229,13 @@ func _ready():
 	gravityPhase = 0;
 	holdPiece = -1;
 	heldTimer = 0;
-	heldDirection = 0;
+	heldDirection = -1;
+	totaldelta = 0;
+	
 	#Implementar xD
-	# currentPieceFallTimer = fallTimerThresholdByLevel[currentLevel];
+	# currentFallTimerThreshold = fallTimerThresholdByLevel[currentLevel];
 	
 	setDebugVars();
-	
-	print("playerID = %d!!!" % player_ID)
 
 func _process(delta):
 	totaldelta += delta;
@@ -241,6 +245,9 @@ func _process(delta):
 		pieceFall();
 	if heldDirection != -1:
 		heldTimer += delta;
+		if heldTimer > heldTimerThreshold:
+			heldTimerThreshold -= heldTimerRepeatThreshold;
+			processMoveInput();
 		# Implementar mantener botón
 	
 	# print(1/delta)
