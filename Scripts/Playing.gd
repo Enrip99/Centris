@@ -13,6 +13,7 @@ var heldTimerRepeatThreshold = 0.2
 var heldDirection: int
 
 var gravityPhase: int
+enum {DOWN, LEFT, UP, RIGHT}
 const gravityArray = [Vector2(0,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,0)]
 #						Down			Left			Up			Right
 
@@ -81,7 +82,7 @@ func holdAction():
 			holdPieceRotation = tempRotation;
 		spawnPiece();
 
-func spawnPiece(): # TO DO!
+func spawnPiece(): # TO DO Check if game over
 	currentPiecePosition = -(halfSide-4) * gravityArray[gravityPhase];
 	currentPieceFallTimer = 0;
 	for y in 4:
@@ -100,7 +101,7 @@ func checkMovementCollission(direction: int) -> bool: #Returns true if collissio
 				return true;
 	return false
 
-func movePiece(direction: int):
+func movePiece(direction: int): # TO DO Check if out of bounds
 	for y in 4:
 		for x in 4:
 			if PIECES[currentPiece][currentPieceRotation][y][x] != -1:
@@ -165,6 +166,7 @@ func rotatePiece(rotation: int): # TO DO: Try to move piece if it fails
 					tilemapNode.set_cell(currentPiecePosition.x+x, currentPiecePosition.y+y,\
 					PIECES[currentPiece][currentPieceRotation][y][x]);
 
+
 func processMoveInput():
 	match (heldDirection - gravityPhase)%4:
 		0:
@@ -176,7 +178,6 @@ func processMoveInput():
 			if !checkMovementCollission(heldDirection):
 				movePiece(heldDirection);
 
-
 func _input(event):
 	if event.is_action_pressed("Player_%d_Rotate_CW" % player_ID):
 		rotatePiece(1);
@@ -186,31 +187,31 @@ func _input(event):
 		holdAction();
 	if event.is_action_pressed("Player_%d_Down" % player_ID):
 		heldTimer = 0;
-		heldDirection = 0;
+		heldDirection = DOWN;
 		processMoveInput()
 	if event.is_action_released("Player_%d_Down" % player_ID):
-		if heldDirection == 0:
+		if heldDirection == DOWN:
 			heldDirection = -1;
 	if event.is_action_pressed("Player_%d_Left" % player_ID):
 		heldTimer = 0;
-		heldDirection = 1;
+		heldDirection = LEFT;
 		processMoveInput()
 	if event.is_action_released("Player_%d_Left" % player_ID):
-		if heldDirection == 1:
+		if heldDirection == LEFT:
 			heldDirection = -1;
 	if event.is_action_pressed("Player_%d_Up" % player_ID):
 		heldTimer = 0;
-		heldDirection = 2;
+		heldDirection = UP;
 		processMoveInput()
 	if event.is_action_released("Player_%d_Up" % player_ID):
-		if heldDirection == 2:
+		if heldDirection == UP:
 			heldDirection = -1;
 	if event.is_action_pressed("Player_%d_Right" % player_ID):
 		heldTimer = 0;
-		heldDirection = 3;
+		heldDirection = RIGHT;
 		processMoveInput()
 	if event.is_action_released("Player_%d_Right" % player_ID):
-		if heldDirection == 3:
+		if heldDirection == RIGHT:
 			heldDirection = -1;
 
 
